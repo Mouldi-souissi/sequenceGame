@@ -170,8 +170,7 @@
 						this.sequence[this.clickCounter].x == x &&
 						this.sequence[this.clickCounter].y == y
 					) {
-						this.score += 100;
-						this.displayScore();
+						
 						this.clickCounter++;
 
 						const match = Array.from(this.gridEl.children).find(
@@ -189,6 +188,8 @@
 							this.generateSequence();
 							this.displaySequence();
 							this.clickCounter = 0;
+							this.score += 100;
+							this.displayScore();
 						}
 					} else {
 						this.clickCounter = 0;
