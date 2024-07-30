@@ -1,243 +1,242 @@
 <!doctype html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Game</title>
-		<style>
-			* {
-				box-sizing: border-box;
-				font-family: arial;
-			}
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Game</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        font-family: arial;
+      }
 
-			body {
-				display: flex;
-				flex-direction: column;
-				justify-content: center;
-				align-items: center;
-				background: darkcyan;
-				min-height: 100vh;
-				padding: 0;
-				margin: 0;
-				overflow: hidden;
-			}
+      body {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background: whitesmoke;
+        min-height: 100vh;
+        padding: 0;
+        margin: 0;
+        overflow: hidden;
+      }
 
-			#grid {
-				display: grid;
-				grid-template-columns: repeat(3, 1fr);
-				grid-template-rows: repeat(3, 1fr);
-				gap: 2px;
-			}
+      #grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(3, 1fr);
+        gap: 10px;
+        filter: drop-shadow(1px 1px 2px grey);
+      }
 
-			.square {
-				height: 100%;
-				width: 100%;
-				min-height: 100px;
-				min-width: 100px;
-				border: 1px groove black;
-				background: grey;
-				box-shadow: inset 1px 1px 5px rgba(0, 0, 0, 0.1);
-				transition: all ease 0.08s;
-			}
+      .square {
+        height: 100%;
+        width: 100%;
+        min-height: 100px;
+        min-width: 100px;
+        border: 1px inset grey;
+        background: grey;
+        box-shadow: inset 1px 1px 5px rgba(0, 0, 0, 0.1);
+        transition: all ease 0.08s;
+      }
 
-			.square[data-is-active="true"] {
-				background: yellowgreen !important;
-			}
+      .square[data-is-active="true"] {
+        background: yellowgreen !important;
+        border: 1px inset yellowgreen !important;
+      }
 
-			.square[data-is-active="wrong"] {
-				background: tomato !important;
-			}
+      .square[data-is-active="wrong"] {
+        background: tomato !important;
+        border: 1px inset tomato !important;
+      }
 
-			.square:hover {
-				cursor: pointer;
-				background: lightgray;
-			}
+      .square:hover {
+        cursor: pointer;
+        /* background: white; */
+        border: 3px inset turquoise !important;
+      }
 
-			.btn {
-				padding: 8px 30px;
-				font-size: 18px;
-				margin-top: 8px;
-				letter-spacing: 2px;
-			}
+      .btn {
+        padding: 8px 30px;
+        font-size: 18px;
+        margin-top: 20px;
+        letter-spacing: 2px;
+      }
 
-			#score {
-				font-size: 18px;
-				color: white;
-				font-weight: bold;
-				margin-bottom: 8px;
-				letter-spacing: 2px;
-			}
-		</style>
-	</head>
-	<body>
-		<div id="score">SCORE: 0</div>
-		<div id="grid"></div>
-		<button class="btn" onclick="play()">Play</button>
-		<script>
-			const gridEl = document.querySelector("#grid");
-			const scoreEl = document.querySelector("#score");
+      #score {
+        font-size: 18px;
+        color: grey;
+        font-weight: bold;
+        margin-bottom: 8px;
+        letter-spacing: 2px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="score">SCORE: 0</div>
+    <div id="grid"></div>
+    <button class="btn" onclick="play()">Play</button>
+    <script>
+      const gridEl = document.querySelector("#grid");
+      const scoreEl = document.querySelector("#score");
 
-			const limx = 3;
-			const limy = 3;
+      const limx = 3;
+      const limy = 3;
 
-			class Game {
-				constructor(limx, limy, gridEl, scoreEl) {
-					this.limx = limx;
-					this.limy = limy;
-					this.gridEl = gridEl;
-					this.scoreEl = scoreEl;
+      class Game {
+        constructor(limx, limy, gridEl, scoreEl) {
+          this.limx = limx;
+          this.limy = limy;
+          this.gridEl = gridEl;
+          this.scoreEl = scoreEl;
 
-					this.sequenceLength = 2;
-					this.grid = [];
-					this.sequence = [];
+          this.sequenceLength = 2;
+          this.grid = [];
+          this.sequence = [];
 
-					this.generateGrid();
-					this.drawGrid();
+          this.generateGrid();
+          this.drawGrid();
 
-					this.clickCounter = 0;
-					this.score = 0;
-					this.delay = 300;
+          this.clickCounter = 0;
+          this.score = 0;
+          this.delay = 300;
 
-					this.isLoading = false;
-				}
+          this.isLoading = false;
+        }
 
-				generateGrid() {
-					let grid = [];
-					for (let i = 0; i < this.limx; i++) {
-						for (let j = 0; j < this.limy; j++) {
-							grid.push({ x: j, y: i });
-						}
-					}
+        generateGrid() {
+          let grid = [];
+          for (let i = 0; i < this.limx; i++) {
+            for (let j = 0; j < this.limy; j++) {
+              grid.push({ x: j, y: i });
+            }
+          }
 
-					this.grid = grid;
-				}
+          this.grid = grid;
+        }
 
-				drawGrid() {
-					for (let square of this.grid) {
-						const sq = document.createElement("div");
-						sq.classList.add("square");
-						sq.dataset.x = square.x;
-						sq.dataset.y = square.y;
-						sq.dataset.isActive = false;
-						sq.addEventListener("click", () =>
-							handleClick(sq.dataset.x, sq.dataset.y),
-						);
+        drawGrid() {
+          for (let square of this.grid) {
+            const sq = document.createElement("div");
+            sq.classList.add("square");
+            sq.dataset.x = square.x;
+            sq.dataset.y = square.y;
+            sq.dataset.isActive = false;
+            sq.addEventListener("click", () =>
+              handleClick(sq.dataset.x, sq.dataset.y)
+            );
 
-						this.gridEl.appendChild(sq);
-					}
-				}
+            this.gridEl.appendChild(sq);
+          }
+        }
 
-				generateSequence() {
-					const sequence = [];
+        generateSequence() {
+          const sequence = [];
 
-					for (let i = 0; i < this.sequenceLength; i++) {
-						const x = this.getRandomIntInclusive(0, 2);
-						const y = this.getRandomIntInclusive(0, 2);
+          for (let i = 0; i < this.sequenceLength; i++) {
+            const x = this.getRandomIntInclusive(0, 2);
+            const y = this.getRandomIntInclusive(0, 2);
 
-						sequence.push({ x, y });
-					}
+            sequence.push({ x, y });
+          }
 
-					this.sequence = sequence;
-				}
+          this.sequence = sequence;
+        }
 
-				sleep(ms) {
-					return new Promise((resolve) => setTimeout(resolve, ms));
-				}
+        sleep(ms) {
+          return new Promise((resolve) => setTimeout(resolve, ms));
+        }
 
-				async displaySequence() {
-					this.isLoading = true;
-					for (let s of this.sequence) {
-						const match = Array.from(this.gridEl.children).find(
-							(child) =>
-								s.x == child.dataset.x &&
-								s.y == child.dataset.y,
-						);
+        async displaySequence() {
+          this.isLoading = true;
+          for (let s of this.sequence) {
+            const match = Array.from(this.gridEl.children).find(
+              (child) => s.x == child.dataset.x && s.y == child.dataset.y
+            );
 
-						if (match) {
-							match.dataset.isActive = true;
-							await this.sleep(this.delay);
-							match.dataset.isActive = false;
-							await this.sleep(this.delay);
-						}
-					}
-					this.isLoading = false;
-				}
+            if (match) {
+              match.dataset.isActive = true;
+              await this.sleep(this.delay);
+              match.dataset.isActive = false;
+              await this.sleep(this.delay);
+            }
+          }
+          this.isLoading = false;
+        }
 
-				async handleClick(x, y) {
-					if (!this.sequence.length) return;
+        async handleClick(x, y) {
+          if (!this.sequence.length) return;
 
-					if (
-						this.sequence[this.clickCounter].x == x &&
-						this.sequence[this.clickCounter].y == y
-					) {
-						
-						this.clickCounter++;
+          if (
+            this.sequence[this.clickCounter].x == x &&
+            this.sequence[this.clickCounter].y == y
+          ) {
+            this.clickCounter++;
 
-						const match = Array.from(this.gridEl.children).find(
-							(child) =>
-								x == child.dataset.x && y == child.dataset.y,
-						);
+            const match = Array.from(this.gridEl.children).find(
+              (child) => x == child.dataset.x && y == child.dataset.y
+            );
 
-						match.dataset.isActive = true;
-						await this.sleep(this.delay);
-						match.dataset.isActive = false;
-						await this.sleep(this.delay);
+            match.dataset.isActive = true;
+            await this.sleep(this.delay);
+            match.dataset.isActive = false;
+            await this.sleep(this.delay);
 
-						if (this.sequenceLength === this.clickCounter) {
-							this.sequenceLength++;
-							this.generateSequence();
-							this.displaySequence();
-							this.clickCounter = 0;
-							this.score += 100;
-							this.displayScore();
-						}
-					} else {
-						this.clickCounter = 0;
-						this.sequence = [];
+            if (this.sequenceLength === this.clickCounter) {
+              await this.sleep(this.delay);
+              this.sequenceLength++;
+              this.generateSequence();
+              this.displaySequence();
+              this.clickCounter = 0;
+              this.score += 100;
+              this.displayScore();
+            }
+          } else {
+            this.clickCounter = 0;
+            this.sequence = [];
 
-						const match = Array.from(this.gridEl.children).find(
-							(child) =>
-								x == child.dataset.x && y == child.dataset.y,
-						);
+            const match = Array.from(this.gridEl.children).find(
+              (child) => x == child.dataset.x && y == child.dataset.y
+            );
 
-						match.dataset.isActive = "wrong";
-						await this.sleep(this.delay);
-						match.dataset.isActive = false;
-						await this.sleep(this.delay);
+            match.dataset.isActive = "wrong";
+            await this.sleep(this.delay);
+            match.dataset.isActive = false;
+            await this.sleep(this.delay);
 
-						alert(`GAMEOVER your score is ${this.score}`);
-						this.score = 0;
-						this.displayScore();
-						this.sequenceLength = 2;
-					}
-				}
+            alert(`GAMEOVER your score is ${this.score}`);
+            this.score = 0;
+            this.displayScore();
+            this.sequenceLength = 2;
+          }
+        }
 
-				displayScore() {
-					this.scoreEl.textContent = `SCORE: ${this.score}`;
-				}
+        displayScore() {
+          this.scoreEl.textContent = `SCORE: ${this.score}`;
+        }
 
-				getRandomIntInclusive(min, max) {
-					const minCeiled = Math.ceil(min);
-					const maxFloored = Math.floor(max);
-					return Math.floor(
-						Math.random() * (maxFloored - minCeiled + 1) +
-							minCeiled,
-					);
-				}
-			}
+        getRandomIntInclusive(min, max) {
+          const minCeiled = Math.ceil(min);
+          const maxFloored = Math.floor(max);
+          return Math.floor(
+            Math.random() * (maxFloored - minCeiled + 1) + minCeiled
+          );
+        }
+      }
 
-			const game = new Game(limx, limy, gridEl, scoreEl);
+      const game = new Game(limx, limy, gridEl, scoreEl);
 
-			function play() {
-				if (game.isLoading) return;
-				game.generateSequence();
-				game.displaySequence();
-			}
+      function play() {
+        if (game.isLoading) return;
+        game.generateSequence();
+        game.displaySequence();
+      }
 
-			async function handleClick(x, y) {
-				if (game.isLoading) return;
-				await game.handleClick(x, y);
-			}
-		</script>
-	</body>
+      async function handleClick(x, y) {
+        if (game.isLoading) return;
+        await game.handleClick(x, y);
+      }
+    </script>
+  </body>
 </html>
